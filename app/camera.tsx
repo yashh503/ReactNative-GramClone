@@ -1,8 +1,10 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   Button,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -29,12 +31,12 @@ export default function App() {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>
+      <SafeAreaView className="flex-1 m-10">
+        <Text className="text-3xl">
           We need your permission to show the camera
         </Text>
         <Button onPress={requestPermission} title="grant permission" />
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -54,7 +56,7 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView className="flex-1">
       <GestureHandlerRootView
         style={{ flex: 1, backgroundColor: theme === "dark" ? "#000" : "#fff" }}
       >
@@ -63,48 +65,19 @@ export default function App() {
           activeOffsetX={[-10, 10]} // Detect significant horizontal swipes (left/right)
           failOffsetY={[-5, 5]} // Ignore vertical swipes
         >
-          <CameraView style={styles.camera} facing={facing}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={toggleCameraFacing}
-              >
-                <Text style={styles.text}>Flip Camera</Text>
+          <CameraView className="flex-1" facing={facing}>
+            <View>
+              <TouchableOpacity onPress={toggleCameraFacing}>
+                <MaterialIcons
+                  name="flip-camera-android"
+                  size={34}
+                  color={theme === "dark" ? "white" : "black"}
+                />
               </TouchableOpacity>
             </View>
           </CameraView>
         </PanGestureHandler>
       </GestureHandlerRootView>
-    </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  message: {
-    textAlign: "center",
-    paddingBottom: 10,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "transparent",
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: "flex-end",
-    alignItems: "center",
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-  },
-});

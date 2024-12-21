@@ -50,11 +50,15 @@ const RootLayout = () => {
           name="index"
           options={{
             headerShown: false,
+            gestureEnabled: true,
           }}
         />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="camera" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="camera"
+          options={{ headerShown: false, animation: "ios_from_left" }}
+        />
         <Stack.Screen
           name="likes"
           options={{
@@ -64,6 +68,7 @@ const RootLayout = () => {
               backgroundColor: theme === "dark" ? "#000" : "#fff",
             },
             headerTintColor: theme === "dark" ? "#fff" : "#000",
+            animation: "slide_from_bottom",
           }}
         />
         <Stack.Screen
@@ -75,6 +80,7 @@ const RootLayout = () => {
               backgroundColor: theme === "dark" ? "#000" : "#fff",
             },
             headerTintColor: theme === "dark" ? "#fff" : "#000",
+            animation: "ios_from_right",
           }}
         />
       </Stack>

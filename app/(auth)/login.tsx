@@ -66,7 +66,7 @@ const login = () => {
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
-                      placeholder="Username"
+                      placeholder="Email"
                       onChangeText={onChange}
                       value={value}
                     />

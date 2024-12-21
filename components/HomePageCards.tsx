@@ -42,7 +42,6 @@ const HomePageCards = (props: any) => {
   }));
 
   const handleDoubleTap = (item: any) => {
-    console.log("Double tap detected!", item.id); // Debug log
     setLiked(true);
 
     // Run animations sequentially
@@ -73,13 +72,8 @@ const HomePageCards = (props: any) => {
         <View className="flex-row justify-between items-center h-5 w-full">
           <TouchableOpacity className="flex-row justify-center items-center">
             <Image
-              className="rounded-full m-3 shadow-lg"
               source={{ uri: item?.image }}
-              style={
-                item?.role !== "admin"
-                  ? { borderColor: "red" }
-                  : { borderColor: "green" }
-              }
+              style={{ margin: 5, borderRadius: 100 }}
               width={30}
               height={30}
             />

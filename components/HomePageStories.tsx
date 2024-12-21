@@ -2,6 +2,7 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
+import "../global.css";
 
 const HomePageStories = (props: any) => {
   const { item } = props;
@@ -20,7 +21,7 @@ const HomePageStories = (props: any) => {
       onPress={item.role === "self" ? handleOpenCamera : handleOpenStory}
     >
       <Image
-        className="w-20 h-20 rounded-full shadow-lg"
+        className="rounded-full shadow-lg"
         source={{ uri: item?.image }}
         style={
           item.role === "self"
@@ -29,6 +30,8 @@ const HomePageStories = (props: any) => {
             ? { borderColor: "green", borderWidth: 2 }
             : { borderColor: "red", borderWidth: 2 }
         }
+        width={60}
+        height={60}
       />
       {item.role === "self" && (
         <AntDesign

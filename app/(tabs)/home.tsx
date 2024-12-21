@@ -11,13 +11,19 @@ import {
 import { fetchData } from "../../redux/actions";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useFonts } from "expo-font";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
+import { ScrollView } from "react-native-virtualized-view";
 import {
   PanGestureHandler,
   GestureHandlerRootView,
   GestureHandlerStateChangeEvent,
   State,
 } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import { Entypo, SimpleLineIcons } from "@expo/vector-icons";
 import HomePageCards from "@/components/HomePageCards";
 import HomePageStories from "@/components/HomePageStories";
@@ -26,6 +32,8 @@ export default function Index() {
   const [loaded] = useFonts({
     SpaceMono: require("../../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const translateX = useSharedValue(0); // Shared value for animation
+  const translateY = useSharedValue(0); // Shared value for animation
   const selfStory = {
     image:
       "https://dummyjson.com/image/400x200/008080?fontFamily=pacifico&text=Hello+i+am+ME&fontSize=27", // Replace with your self-image URL
@@ -33,7 +41,7 @@ export default function Index() {
   };
   const { width, height } = useWindowDimensions();
   const [dataSet, setDataSet] = useState([]);
-  const [storiesData, setStoriesData] = useState([]);
+  const [storiesData, setStoriesData] = useState<any>([]);
   const fetchDataAndLog = async () => {
     try {
       const data = await fetchData(); // Call the imported async function
@@ -49,6 +57,7 @@ export default function Index() {
       console.error("Error fetching data:", error); // Handle any errors
     }
   };
+
   const onGestureEvent = (event: GestureHandlerStateChangeEvent) => {
     const { translationX, state } = event.nativeEvent as any;
 
@@ -56,13 +65,43 @@ export default function Index() {
     if (state === State.END) {
       if (translationX > 100) {
         // Swiped right, navigate to another route
+        translateX.value = 0;
         router.push("/camera"); // Use router.push for navigation
       } else if (translationX < -100) {
         // Swiped left, navigate to camera
+        translateX.value = 0;
         router.push("/message"); // Use router.push to open the camera screen
+      } else {
+        translateX.value = 0; // Reset position for incomplete swipe
       }
+    } else {
+      translateX.value = translationX; // Update animation value
     }
   };
+  const [oldv, setOldV] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(80); // Normal header height
+  const onScroll = (event) => {
+    const contentOffsetY = event.nativeEvent.contentOffset.y; // Get current scroll position
+    // If scroll down, hide the header
+    if (contentOffsetY < oldv) {
+      // If scroll up, show the header
+      translateY.value = withTiming(0, { duration: 300 });
+      setHeaderHeight(80); // Set to normal height
+    } else if (contentOffsetY > 10) {
+      translateY.value = withTiming(-80, { duration: 300 });
+      setHeaderHeight(0); // Set height to 0 when hidden
+    } else {
+      translateY.value = withTiming(0, { duration: 300 });
+      setHeaderHeight(80); // Default normal height when at top
+    }
+    setOldV(contentOffsetY); // Update scroll position
+  };
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    height: headerHeight, // Dynamically change height
+  }));
+
   useEffect(() => {
     fetchDataAndLog();
   }, []);
@@ -80,7 +119,8 @@ export default function Index() {
     <GestureHandlerRootView
       style={{ flex: 1, backgroundColor: theme === "dark" ? "#000" : "#fff" }}
     >
-      <View className="w-full flex-row h-16 justify-between mt-3">
+      {/* Header of page start */}
+      <View className="w-full flex-row  justify-between mt-3">
         <Image
           source={
             theme === "dark"
@@ -90,7 +130,7 @@ export default function Index() {
           resizeMode="contain"
           style={{ width: width / 4, height: 60 }}
         />
-        <View className="flex-row justify-center items-center">
+        <View className="flex-row h-16 justify-center items-center">
           <TouchableOpacity onPress={handleOpenLikes} className="relative">
             <AntDesign
               name="hearto"
@@ -118,7 +158,8 @@ export default function Index() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ flex: 1 }}>
+      {/* Header of page end */}
+      <ScrollView style={{ flex: 1 }} scrollEventThrottle={17}>
         <View>
           <FlatList
             data={storiesData}
@@ -151,7 +192,7 @@ export default function Index() {
             />
           </View>
         </PanGestureHandler>
-      </View>
+      </ScrollView>
     </GestureHandlerRootView>
   );
 }
