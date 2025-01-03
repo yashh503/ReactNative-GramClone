@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -7,11 +7,13 @@ import {
   Image,
   useWindowDimensions,
   useColorScheme,
+  Alert,
+  BackHandler,
 } from "react-native";
 import { fetchData } from "../../redux/actions";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useFonts } from "expo-font";
-import { router, useNavigation } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import { ScrollView } from "react-native-virtualized-view";
 import {
   PanGestureHandler,
@@ -29,6 +31,25 @@ import HomePageCards from "@/components/HomePageCards";
 import HomePageStories from "@/components/HomePageStories";
 
 export default function Index() {
+  const backAction = () => {
+    Alert.alert("Hold on!", "Are you sure you want to go back?", [
+      {
+        text: "Cancel",
+        onPress: () => null,
+        style: "cancel",
+      },
+      { text: "YES", onPress: () => BackHandler.exitApp() },
+    ]);
+    return true;
+  };
+  useFocusEffect(
+    React.useCallback(() => {
+      BackHandler.addEventListener("hardwareBackPress", backAction);
+      return () => {
+        BackHandler.removeEventListener("hardwareBackPress", backAction);
+      };
+    }, [])
+  );
   const [loaded] = useFonts({
     SpaceMono: require("../../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -58,29 +79,29 @@ export default function Index() {
     }
   };
 
-  const onGestureEvent = (event: GestureHandlerStateChangeEvent) => {
-    const { translationX, state } = event.nativeEvent as any;
+  // const onGestureEvent = (event: GestureHandlerStateChangeEvent) => {
+  //   const { translationX, state } = event.nativeEvent as any;
 
-    // Check if the gesture has ended (State.END)
-    if (state === State.END) {
-      if (translationX > 100) {
-        // Swiped right, navigate to another route
-        translateX.value = 0;
-        router.push("/camera"); // Use router.push for navigation
-      } else if (translationX < -100) {
-        // Swiped left, navigate to camera
-        translateX.value = 0;
-        router.push("/message"); // Use router.push to open the camera screen
-      } else {
-        translateX.value = 0; // Reset position for incomplete swipe
-      }
-    } else {
-      translateX.value = translationX; // Update animation value
-    }
-  };
+  //   // Check if the gesture has ended (State.END)
+  //   if (state === State.END) {
+  //     if (translationX > 100) {
+  //       // Swiped right, navigate to another route
+  //       translateX.value = 0;
+  //       router.push("/camera"); // Use router.push for navigation
+  //     } else if (translationX < -100) {
+  //       // Swiped left, navigate to camera
+  //       translateX.value = 0;
+  //       router.push("/message"); // Use router.push to open the camera screen
+  //     } else {
+  //       translateX.value = 0; // Reset position for incomplete swipe
+  //     }
+  //   } else {
+  //     translateX.value = translationX; // Update animation value
+  //   }
+  // };
   const [oldv, setOldV] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(80); // Normal header height
-  const onScroll = (event) => {
+  const onScroll = (event: any) => {
     const contentOffsetY = event.nativeEvent.contentOffset.y; // Get current scroll position
     // If scroll down, hide the header
     if (contentOffsetY < oldv) {
@@ -116,7 +137,7 @@ export default function Index() {
   };
   const theme = useColorScheme(); // Returns 'light' or 'dark'
   return (
-    <GestureHandlerRootView
+    <View
       style={{ flex: 1, backgroundColor: theme === "dark" ? "#000" : "#fff" }}
     >
       {/* Header of page start */}
@@ -176,23 +197,20 @@ export default function Index() {
             }}
           />
         </View>
-        <PanGestureHandler
-          onHandlerStateChange={onGestureEvent}
-          activeOffsetX={[-10, 10]} // Detect significant horizontal swipes (left/right)
-          failOffsetY={[-5, 5]} // Ignore vertical swipes
-        >
-          <View style={{ flex: 1 }}>
-            <FlatList
-              data={dataSet}
-              keyExtractor={(item, index) => index.toString()}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }: { item: any }) => {
-                return <HomePageCards item={item} />;
-              }}
-            />
-          </View>
-        </PanGestureHandler>
+        {/* <PagerView style={{ flex: 1 }} initialPage={0}> */}
+
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={dataSet}
+            keyExtractor={(item, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }: { item: any }) => {
+              return <HomePageCards item={item} />;
+            }}
+          />
+        </View>
+        {/* </PagerView> */}
       </ScrollView>
-    </GestureHandlerRootView>
+    </View>
   );
 }

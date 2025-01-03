@@ -1,4 +1,8 @@
+import CustomSplashScreen from "@/components/CustomSplashScreen";
+import { checkLoginStatus } from "@/redux/actions";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, Redirect, router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,10 +15,33 @@ import {
 // import { useGlobalContext } from "../context/GlobalProvider";
 
 const Welcome = () => {
-  // const { loading, isLogged } = useGlobalContext();
-
-  // if (!loading && isLogged) return <Redirect href="/home" />;
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isloading, setIsLoading] = useState(true);
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (token) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    }
+  };
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/home");
+    }
+  }, [isAuthenticated]);
+  if (isloading) {
+    return <CustomSplashScreen />;
+  }
   return (
     <View className=" bg-[#2E5077] flex-1">
       <ScrollView
@@ -49,7 +76,9 @@ const Welcome = () => {
           </Text>
 
           <TouchableOpacity
-            onPress={() => router.push("/home")}
+            onPress={() => {
+              isAuthenticated ? router.push("/home") : router.push("/login");
+            }}
             className="w-full mt-7 text-center p-5 rounded-lg bg-[#4DA1A9]"
           >
             <Text className="text-center text-yellow-50 text-xl">

@@ -1,10 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   Button,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,7 +15,9 @@ import {
   GestureHandlerRootView,
   GestureHandlerStateChangeEvent,
   State,
+  TapGestureHandler,
 } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -31,11 +32,11 @@ export default function App() {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <SafeAreaView className="flex-1 m-10">
-        <Text className="text-3xl">
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.text}>
           We need your permission to show the camera
         </Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Button onPress={requestPermission} title="Grant Permission" />
       </SafeAreaView>
     );
   }
@@ -43,41 +44,66 @@ export default function App() {
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
+
   const onGestureEvent = (event: GestureHandlerStateChangeEvent) => {
     const { translationX, state } = event.nativeEvent as any;
 
     // Check if the gesture has ended (State.END)
     if (state === State.END) {
       if (translationX < -100) {
-        // Swiped left, navigate to camera
-        router.push("/home"); // Use router.push to open the camera screen
+        // Swiped left, navigate to the next screen (e.g., /home)
+        router.push("/home");
       }
     }
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <GestureHandlerRootView
-        style={{ flex: 1, backgroundColor: theme === "dark" ? "#000" : "#fff" }}
-      >
+    <SafeAreaView style={styles.container}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <PanGestureHandler
           onHandlerStateChange={onGestureEvent}
-          activeOffsetX={[-10, 10]} // Detect significant horizontal swipes (left/right)
-          failOffsetY={[-5, 5]} // Ignore vertical swipes
+          activeOffsetX={[-10, 10]}
+          failOffsetY={[-5, 5]}
         >
-          <CameraView className="flex-1" facing={facing}>
-            <View>
-              <TouchableOpacity onPress={toggleCameraFacing}>
-                <MaterialIcons
-                  name="flip-camera-android"
-                  size={34}
-                  color={theme === "dark" ? "white" : "black"}
-                />
-              </TouchableOpacity>
-            </View>
-          </CameraView>
+          <View style={{ flex: 1 }}>
+            <TapGestureHandler
+              numberOfTaps={2}
+              onActivated={toggleCameraFacing}
+            >
+              <CameraView style={styles.camera} facing={facing}>
+                <View style={styles.cameraControls}>
+                  <TouchableOpacity onPress={toggleCameraFacing}>
+                    <MaterialIcons
+                      name="flip-camera-android"
+                      size={34}
+                      color={theme === "dark" ? "white" : "black"}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </CameraView>
+            </TapGestureHandler>
+          </View>
         </PanGestureHandler>
       </GestureHandlerRootView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraControls: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 1,
+  },
+  text: {
+    fontSize: 24,
+    marginBottom: 10,
+  },
+});

@@ -1,3 +1,4 @@
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +7,6 @@ import {
   useWindowDimensions,
   useColorScheme,
 } from "react-native";
-import React, { useState } from "react";
 import {
   AntDesign,
   Feather,
@@ -14,23 +14,31 @@ import {
   FontAwesome5,
   SimpleLineIcons,
 } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { TapGestureHandler } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  TapGestureHandler,
+} from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
 } from "react-native-reanimated";
+import PagerView from "react-native-pager-view";
+import { router } from "expo-router";
 
 const HomePageCards = (props: any) => {
+  const pagerRef = useRef(null);
+
   const { item } = props;
   const { width, height } = useWindowDimensions();
+  const [currentPage, setCurrentPage] = useState(0);
   const theme = useColorScheme(); // Returns 'light' or 'dark'
   const handleCheckProfile = () => {
     router.push("/(tabs)/profile");
   };
   const [liked, setLiked] = useState(false);
+
   // Shared values for heart animation
   const heartScale = useSharedValue(0);
   const heartOpacity = useSharedValue(0);
@@ -40,7 +48,9 @@ const HomePageCards = (props: any) => {
     transform: [{ scale: heartScale.value }],
     opacity: heartOpacity.value,
   }));
-
+  const handlepagerScroll = (e: any) => {
+    console.log(e, "onscorlll");
+  };
   const handleDoubleTap = (item: any) => {
     setLiked(true);
 
@@ -53,6 +63,15 @@ const HomePageCards = (props: any) => {
     });
   };
 
+  // Sample images
+  const images = [
+    `https://cdndailyexcelsior.b-cdn.net/wp-content/uploads/2024/12/PM-MODI-1-scaled.jpg`,
+    `https://media.assettype.com/freepressjournal/2024-10-14/l91tkd3f/Snapinsta.app454725563970926751384724749267660446972739n1080.jpg`,
+    `https://cdn.britannica.com/48/252748-050-C514EFDB/Virat-Kohli-India-celebrates-50th-century-Cricket-November-15-2023.jpg`,
+    `https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQXC-xRTD3uUB4G_Y1hgi-aDaFAywhDrQwp8Vqu8lMd0HIXAc5M-PvODMmItsYoqrbcXSVB-hp8mZ6s_p7hr9bvlA`,
+    `https://www.aljazeera.com/wp-content/uploads/2024/11/WIDE-THUMBNAIL-1731158859.jpg?resize=730%2C410&quality=80`,
+  ];
+  const randomIndex = Math.floor(Math.random() * images.length);
   return (
     <View
       style={{
@@ -67,12 +86,14 @@ const HomePageCards = (props: any) => {
           width: width,
           backgroundColor: theme === "dark" ? "#000" : "#fff",
         }}
-        className="flex flex-col items-center justify-center bg-white  dark:bg-gray-800 "
+        className="flex flex-col items-center justify-center bg-white dark:bg-gray-800"
       >
         <View className="flex-row justify-between items-center h-5 w-full">
           <TouchableOpacity className="flex-row justify-center items-center">
             <Image
-              source={{ uri: item?.image }}
+              source={{
+                uri: `https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQqRvaO1nKlV_RwVvz3gm9ME_TCXqKzCn-etjQCTD1-S-eJtaVCMJ-aRGvNJyWQHpvl67XSvFU5DFybcSSs4W9PvA1CqlQ2pdyijVYC_A`,
+              }}
               style={{ margin: 5, borderRadius: 100 }}
               width={30}
               height={30}
@@ -90,21 +111,31 @@ const HomePageCards = (props: any) => {
             />
           </View>
         </View>
-        <View
-          className="w-full  border border-gray-200 dark:border-gray-700"
-          style={{ height: height / 3 }}
-        >
+        <View className="w-full" style={{ height: height / 3 }}>
           <TapGestureHandler
             numberOfTaps={2}
             onActivated={() => handleDoubleTap(item)}
           >
             <View style={{ flex: 1 }}>
-              <Image
-                className="w-full h-full mb-3"
-                source={{
-                  uri: `https://dummyjson.com/image/400x200/008080?fontFamily=pacifico&text=Hello+i+am+${item?.firstName}&fontSize=27`,
-                }}
-              />
+              <PagerView
+                ref={pagerRef}
+                style={{ flex: 1 }}
+                initialPage={0}
+                onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+                overdrag={true}
+                scrollEnabled={true}
+                overScrollMode={"always"}
+                orientation={"horizontal"}
+              >
+                {images.map((uri, index) => (
+                  <Image
+                    key={index}
+                    className="w-full h-full"
+                    source={{ uri }}
+                    height={100}
+                  />
+                ))}
+              </PagerView>
               <Animated.View
                 style={[
                   {
@@ -120,6 +151,32 @@ const HomePageCards = (props: any) => {
               </Animated.View>
             </View>
           </TapGestureHandler>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+          }}
+        >
+          {images.map((_, index) => (
+            <View
+              key={index}
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                marginHorizontal: 4,
+                backgroundColor:
+                  currentPage === index
+                    ? theme === "dark"
+                      ? "#fff"
+                      : "#000"
+                    : "#ccc",
+              }}
+            />
+          ))}
         </View>
         <View className="flex-row justify-between items-center h-10 mt-3 w-full">
           <View className="flex-row">

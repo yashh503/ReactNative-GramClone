@@ -8,12 +8,19 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { loginUser } from "@/redux/actions";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface IFormInput {
+  email: string;
+  password: string;
+}
 
 const login = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -30,15 +37,29 @@ const login = () => {
   const {
     control,
     handleSubmit,
-    getValues,
     formState: { errors, isValid },
-  } = useForm({
+  } = useForm<IFormInput>({
     resolver: zodResolver(loginSchema),
     mode: "all",
   });
-  const handleLogin = (data: any) => {
+  const handleLogin = async (data: any) => {
+    const { password, email } = data;
     console.log(data);
-    router.push("/home");
+    const payload = {
+      email: email,
+      password: password,
+    };
+    try {
+      const login = await loginUser(payload);
+      console.log(login.status)
+      if (login.status === 200) {
+        await AsyncStorage.setItem("authToken", login.data.accessToken);
+        await AsyncStorage.setItem("loggeinUser", login.data.user.email);
+        router.push('/home')
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
   return (
     // <KeyboardAvoidingView behavior="padding">
@@ -54,10 +75,7 @@ const login = () => {
           showsHorizontalScrollIndicator={false}
         >
           <View className="flex-1 justify-center items-center px-8">
-            <Text className="text-gray-900 dark:text-white text-3xl m-5">
-              {" "}
-              Login
-            </Text>
+            <Text className="text-white text-3xl m-5"> Login</Text>
             <View className="flex-col w-full gap-5">
               <View>
                 <Controller
@@ -65,7 +83,7 @@ const login = () => {
                   name="email"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                      className="border p-5 border-white w-full rounded-lg bg-white"
                       placeholder="Email"
                       onChangeText={onChange}
                       value={value}
@@ -83,7 +101,7 @@ const login = () => {
                     name="password"
                     render={({ field: { onChange, value } }) => (
                       <TextInput
-                        className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                        className="border p-5  border-white w-full rounded-lg  bg-white"
                         placeholder="Password"
                         value={value}
                         onChangeText={onChange}
@@ -119,7 +137,7 @@ const login = () => {
               </TouchableOpacity>
             </View>
             <View>
-              <Text className="text-gray-600 text-center dark:text-gray-300 mt-10">
+              <Text className="text-gray-400 text-center   mt-10">
                 Don't have an account?{" "}
                 <Text
                   className="text-center text-blue-600 py-2 underline underline-offset-4 font-bold"

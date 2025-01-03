@@ -15,14 +15,26 @@ import {
   SimpleLineIcons,
 } from "@expo/vector-icons";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import HomePageCards from "@/components/HomePageCards";
 
 const profile = () => {
   const theme = useColorScheme(); // Returns 'light' or 'dark'
-  const handleLogout = () => {
-    router.push("/login");
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    router.push("/");
   };
   const { width, height } = useWindowDimensions();
-
+  const item = {
+    id: 1,
+    image: "https://picsum.photos/id/237/200/300",
+    role: "CEO",
+    first_name: "John Doe",
+    last_name: "John Doe",
+    age: 30,
+    location: "New York, USA",
+  };
+  
   return (
     <View
       className="flex-1"
@@ -77,6 +89,7 @@ const profile = () => {
         </View>
       </View>
       <Text className="text-gray-900 dark:text-white">Profile</Text>
+      <HomePageCards item={item} />
       <TouchableOpacity
         onPress={handleLogout}
         className="px-5 py-2 border border-black dark:border-white border-r-4 mt-4"

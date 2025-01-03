@@ -71,7 +71,7 @@ const Register = () => {
     router.push("/login");
   };
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     const { username, email, password, confirmpassword } = data;
     console.log(data);
     if (!username && !email && !password && !confirmpassword) {
@@ -83,8 +83,17 @@ const Register = () => {
       alert("Passwords do not match");
       return;
     }
-
-    router.push("/login");
+    const payload = {
+      username: username,
+      email: email,
+      password: password,
+    };
+    try {
+      // await dispatch(signUpThunk(payload));
+      router.push("/login");
+    } catch (error) {
+      console.error("Error during sign-up:", error);
+    }
   };
 
   return (
@@ -100,9 +109,7 @@ const Register = () => {
           showsHorizontalScrollIndicator={false}
         >
           <View className="flex-1 justify-center items-center px-8">
-            <Text className="text-gray-900 dark:text-white text-3xl m-5">
-              Register
-            </Text>
+            <Text className=" text-white text-3xl m-5">Register</Text>
             <View className="flex-col w-full gap-5">
               {/* Username Input */}
               <View>
@@ -111,7 +118,7 @@ const Register = () => {
                   name="username"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                      className="border p-5  border-white w-full rounded-lg  bg-white"
                       placeholder="Username"
                       onChangeText={onChange}
                       value={value}
@@ -131,7 +138,7 @@ const Register = () => {
                   name="email"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                      className="border p-5  border-white w-full rounded-lg  bg-white"
                       placeholder="Email"
                       onChangeText={onChange}
                       value={value}
@@ -150,7 +157,7 @@ const Register = () => {
                     name="password"
                     render={({ field: { onChange, value } }) => (
                       <TextInput
-                        className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                        className="border p-5  border-white w-full rounded-lg  bg-white"
                         placeholder="Password"
                         secureTextEntry={!isPasswordVisible}
                         onChangeText={onChange}
@@ -183,7 +190,7 @@ const Register = () => {
                     name="confirmpassword"
                     render={({ field: { onChange, value } }) => (
                       <TextInput
-                        className="border p-5 dark:border-white w-full rounded-lg dark:bg-white"
+                        className="border p-5  border-white w-full rounded-lg  bg-white"
                         placeholder="Confirm Password"
                         secureTextEntry={!isPasswordVisible}
                         onChangeText={onChange}
@@ -222,7 +229,7 @@ const Register = () => {
 
             {/* Login Link */}
             <View>
-              <Text className="text-gray-600 text-center dark:text-gray-300 mt-10">
+              <Text className=" text-center  text-gray-300 mt-10">
                 Already have an account?{" "}
                 <Text
                   className="text-center text-blue-600 py-2 underline underline-offset-4 font-bold"
